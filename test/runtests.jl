@@ -1013,12 +1013,12 @@ end
     for i = 1:5
         α = 0.132434
         new_E1 = E1_noparams.newmodel()
-        prev_length = length(names(modelmodule, all=true))
+        prev_length = length(Base.invokelatest(names, modelmodule; all=true))
         @equations new_E1 begin
             :maineq => y[t] = $α * y[t-1] + $(1 - α) * y[t+1] + y_shk[t]
         end
         @reinitialize(new_E1)
-        new_length = length(names(modelmodule, all=true))
+        new_length = length(Base.invokelatest(names, modelmodule; all=true))
         if i == 1
             @test new_length == prev_length + 3
         else
@@ -1027,7 +1027,7 @@ end
         @test ModelBaseEcon.moduleof(new_E1.equations[:maineq]) === E1_noparams
         # also make sure moduleof doesn't add any new symbols to modules
         @test ModelBaseEcon.moduleof(new_E1) === E1_noparams
-        @test new_length == length(names(modelmodule, all=true))
+        @test new_length == length(Base.invokelatest(names, modelmodule; all=true))
     end
 end
 
@@ -1747,7 +1747,7 @@ end
         x = Float64[0, 0.375, 0.128, 0]
         x[1] = model.parameters.c[1] * x[2] + model.parameters.c[2] * x[3]
         eq = model.equations[:E1]
-        @test 0 == eq.eval_resid(x)
+        @test 0 == ModelBaseEcon.eval_resid(eq, x)
     end
 end
 
