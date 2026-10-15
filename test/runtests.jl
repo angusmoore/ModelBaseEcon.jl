@@ -46,7 +46,11 @@ import ModelBaseEcon.update
         @test_logs (:warn, r".*do not specify transformation directly.*"i) @test update(m.ly, transformation=LogTransform).tr_type == :log
         @test_logs (:warn, r".*do not specify transformation directly.*"i) @test update(m.lmy, tr_type=:neglog, transformation=NegLogTransform).tr_type == :neglog
 
-        @test_throws ErrorException m.dummy = nothing
+        if VERSION >= v"1.12"
+            @test_throws FieldError m.dummy = Nothing
+        else
+            @test_throws ErrorException m.dummy = nothing
+        end
 
     end
 end
@@ -442,7 +446,12 @@ end
 
         @test m.exogenous == ModelVariable[]
         @test m.nexog == 0
-        @test_throws ErrorException m.dummy
+
+        if VERSION >= v"1.12"
+            @test_throws FieldError m.dummy
+        else
+            @test_throws ErrorException m.dummy
+        end
 
         @test show(IOBuffer(), MIME"text/plain"(), m.flags) === nothing
     end
@@ -480,10 +489,17 @@ end
 @testset "Abstract" begin
     struct AM <: ModelBaseEcon.AbstractModel end
     m = AM()
-    @test_throws ErrorException ModelBaseEcon.alleqns(m)
-    @test_throws ErrorException ModelBaseEcon.allvars(m)
-    @test_throws ErrorException ModelBaseEcon.nalleqns(m) == 0
-    @test_throws ErrorException ModelBaseEcon.nallvars(m) == 0
+    if VERSION >= v"1.12"
+        @test_throws FieldError ModelBaseEcon.alleqns(m)
+        @test_throws FieldError ModelBaseEcon.allvars(m)
+        @test_throws FieldError ModelBaseEcon.nalleqns(m) == 0
+        @test_throws FieldError ModelBaseEcon.nallvars(m) == 0
+    else
+        @test_throws ErrorException ModelBaseEcon.alleqns(m)
+        @test_throws ErrorException ModelBaseEcon.allvars(m)
+        @test_throws ErrorException ModelBaseEcon.nalleqns(m) == 0
+        @test_throws ErrorException ModelBaseEcon.nallvars(m) == 0
+    end
     @test_throws ErrorException ModelBaseEcon.moduleof(m) == @__MODULE__
 end
 
